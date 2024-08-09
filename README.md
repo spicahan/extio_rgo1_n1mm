@@ -45,5 +45,5 @@ If you're not familiar with Visual Studio, you can use `mingw`. Since N1MM+ Logg
 Add the `mingw32` bin directory to your `PATH` environment variable. Once done, simply run:
 
 ```
-g++ -Wall -shared -o extio_rgo1_n1mm.dll extio_rgo1_n1mm.cpp "-Wl,--kill-at"
+g++ -Wall -shared -static -o extio_rgo1_n1mm.dll extio_rgo1_n1mm.cpp "-Wl,--kill-at"
 ```

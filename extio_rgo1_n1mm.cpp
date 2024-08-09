@@ -20,20 +20,33 @@ typedef void (*Callback)(int, int, float, void *);
 
 static HMODULE hModule;
 static long fakeFreq = 0;
-#define FIXED_IF 8998900
+static int hwType = 0;
+#define FIXED_IF 8999050
 
 static Callback realCallback = nullptr;
 
 void SwapIQCallback(int cnt, int status, float IQoffs, void *IQdata) {
     // Check if it's for IQ data available. If yes, swap IQ
     if (cnt > 0) {
-        // TODO handle the case where I/Q sample is not 32 bits
-        for (int i = 0; i < cnt; ++i) {
-            uint32_t *sampleI = reinterpret_cast<uint32_t *>(IQdata) + i * 2;
-            uint32_t *sampleQ = reinterpret_cast<uint32_t *>(IQdata) + i * 2 + 1;
-            uint32_t I = *sampleI;
-            *sampleI = *sampleQ;
-            *sampleQ = I;
+        // TODO handle the case where I/Q sample is 16 bits
+        for (int i = 0; i < cnt; ++i)
+        {
+            if (hwType == 3)
+            {
+                uint16_t *sampleI = reinterpret_cast<uint16_t *>(IQdata) + i * 2;
+                uint16_t *sampleQ = reinterpret_cast<uint16_t *>(IQdata) + i * 2 + 1;
+                uint16_t I = *sampleI;
+                *sampleI = *sampleQ;
+                *sampleQ = I;
+            }
+            else
+            {
+                uint32_t *sampleI = reinterpret_cast<uint32_t *>(IQdata) + i * 2;
+                uint32_t *sampleQ = reinterpret_cast<uint32_t *>(IQdata) + i * 2 + 1;
+                uint32_t I = *sampleI;
+                *sampleI = *sampleQ;
+                *sampleQ = I;
+            }
         }
     }
     realCallback(cnt, status, IQoffs, IQdata);
@@ -130,7 +143,9 @@ bool __stdcall __declspec(dllexport) InitHW(char *name, char *model, int &index)
     {
         return FALSE;
     }
-    return realInitHW(name, model, index);
+    bool rc = realInitHW(name, model, index);
+    hwType = index;
+    return rc;
 }
 
 bool __stdcall __declspec(dllexport) OpenHW(void) {
